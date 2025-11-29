@@ -1,0 +1,25 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/udemy-mlops-474821/advertising-roi-model', '.']
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/uudemy-mlops-474821/advertising-roi']
+
+- name: 'gcr.io/udemy-mlops-474821/advertising-roi'
+  entrypoint: 'bash'
+  args:
+   - '-c'
+   - |
+      python -m pytest
+
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/nishanthegde/udemy-mlops-advertising-model.git']
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'udemy-mlops-advertising-model/advertising_model_training.py', 'gs:// us-central1-mlops-airflow-1ed8541c-bucket/dags']
+
+images:
+- 'gcr.io/udemy-mlops-474821/advertising-roi'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

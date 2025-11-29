@@ -205,3 +205,24 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+cat << 'EOF' > .gitignore
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual env
+.venv/
+venv/
+
+# pytest cache
+.pytest_cache/
+
+# Local artifacts
+model.joblib
+
+# OS
+.DS_Store
+EOF
