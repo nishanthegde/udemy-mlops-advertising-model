@@ -1,25 +1,39 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/udemy-mlops-474821/advertising-roi-model', '.']
+  # 1) Build Docker image from current directory (where Dockerfile & code live)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'gcr.io/$PROJECT_ID/advertising-roi-model:latest',
+        '.'
+      ]
 
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/uudemy-mlops-474821/advertising-roi']
+  # 2) Run pytest inside the built image
+  - name: 'gcr.io/$PROJECT_ID/advertising-roi-model:latest'
+    entrypoint: 'bash'
+    args: ['-c', 'pytest -v test_training.py']
 
-- name: 'gcr.io/udemy-mlops-474821/advertising-roi'
-  entrypoint: 'bash'
-  args:
-   - '-c'
-   - |
-      python -m pytest
+  # 3) Push image to registry (only if tests pass)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'gcr.io/$PROJECT_ID/advertising-roi-model:latest'
+      ]
 
-- name: 'gcr.io/cloud-builders/git'
-  args: ['clone', 'https://github.com/nishanthegde/udemy-mlops-advertising-model.git']
-
-- name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', 'udemy-mlops-advertising-model/advertising_model_training.py', 'gs:// us-central1-mlops-airflow-1ed8541c-bucket/dags']
+  # 4) Deploy latest training script to Composer DAGs bucket
+  #    (so Airflow/Composer picks up the new version)
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args:
+      [
+        'cp',
+        'advertising_model_training.py',
+        'gs://us-central1-mlops-airflow-1ed8541c-bucket/dags'
+      ]
 
 images:
-- 'gcr.io/udemy-mlops-474821/advertising-roi'
+  - 'gcr.io/$PROJECT_ID/advertising-roi-model:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -10,7 +10,6 @@ from datetime import datetime
 from google.cloud import bigquery
 import json 
 
-
 def read_campaign_data(file_path):
     df = pd.read_csv(file_path)
     df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
